@@ -1,58 +1,24 @@
 import os.path
 import json
 
-#-------------------------------- Helper Functions --------------------------
-# returns encrypted letter
-def encryptCharacter(charToEncrypt, key):
-    if not charToEncrypt.isalpha():
-        return charToEncrypt
-    finalLetter = 'Z'
-    firstLetter = 'A'
-    if charToEncrypt.islower():
-        finalLetter = 'z'
-        firstLetter = 'a'
-    if ord(charToEncrypt) + key > ord(finalLetter):
-        keyLeftToAdd = key - (ord(finalLetter) - ord(charToEncrypt))
-        return chr(ord(firstLetter) + keyLeftToAdd - 1)
-    elif ord(charToEncrypt) + key < ord(firstLetter):
-        keyLeftToDiff = key + (ord(charToEncrypt) - ord(firstLetter)) + 1
-        return chr(ord(finalLetter) + keyLeftToDiff)
-    else:
-        return chr(ord(charToEncrypt) + key)
-
-
-# returns decrypted letter
-def decryptCharacter(charToDecrypt, key):
-    if not charToDecrypt.isalpha():
-        return charToDecrypt
-    finalLetter = 'Z'
-    firstLetter = 'A'
-    if charToDecrypt.islower():
-        finalLetter = 'z'
-        firstLetter = 'a'
-    if ord(charToDecrypt) - key > ord(finalLetter):
-        keyLeftToAdd = key + (ord(finalLetter) - ord(charToDecrypt))
-        return chr(ord(firstLetter) - keyLeftToAdd - 1)
-    elif ord(charToDecrypt) - key < ord(firstLetter):
-        keyLeftToDiff = key - (ord(charToDecrypt) - ord(firstLetter)) - 1
-        return chr(ord(finalLetter) - keyLeftToDiff)
-    else:
-        return chr(ord(charToDecrypt) - key)
-
-
 #-------------------------------- CaesarCipher class --------------------------
 class  CaesarCipher:
     def __init__(self, key) :
+        if key >= 0: 
+            key = key % (ord('z') - ord('a'))
+        else:
+            key = -((-key) % (ord('z') - ord('a')))
         self.key = key
 
     def encrypt(self, toEncrypt) :
         encryptedWord = ""
         for char in toEncrypt :
             numOfChar = ord(char)
-            if(char >= 'A' and char <= 'Z'):
-                numOfChar = self.getNumOfChar(ord('A') , ord('Z'), numOfChar)
-            elif (char >= 'a' and char <= 'z') :
-                numOfChar = self.getNumOfChar(ord('a') , ord('z'), numOfChar)
+            if char.isalpha():
+                if char.isupper():
+                    numOfChar = self.getNumOfChar(ord('A') , ord('Z'), numOfChar)
+                else:
+                    numOfChar = self.getNumOfChar(ord('a') , ord('z'), numOfChar)
             encryptedWord += chr(numOfChar)
         return encryptedWord
 
@@ -83,7 +49,8 @@ class VigenereCipher:
             if counter == lenOfKeyList:
                 counter = 0
             if char.isalpha():
-                encryptedStr = encryptedStr + encryptCharacter(char, self.keysList[counter])
+                cipher = CaesarCipher(self.keysList[counter])
+                encryptedStr = encryptedStr + cipher.encrypt(char) 
                 counter = counter + 1
             else:
                 encryptedStr = encryptedStr + char
@@ -97,7 +64,8 @@ class VigenereCipher:
             if counter == lenOfKeyList:
                 counter = 0
             if char.isalpha():
-                decryptedStr = decryptedStr + decryptCharacter(char, self.keysList[counter])
+                cipher = CaesarCipher(self.keysList[counter])
+                decryptedStr = decryptedStr + cipher.decrypt(char)
                 counter = counter + 1
             else:
                 decryptedStr = decryptedStr + char
@@ -136,7 +104,7 @@ def loadEncryptionSystem(dir_path):
         cipher = CaesarCipher(key)
     files = [f for f in os.listdir('.') if os.path.isfile(f)]
     #if needs to encrypt .txt files to .enc files
-    if ifEncrypt == True:
+    if ifEncrypt:
         for file in files:
             if file.endswith('.txt'):
                 originalFile = open(file, 'r')
