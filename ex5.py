@@ -47,8 +47,8 @@ class  CaesarCipher:
 
     def encrypt(self, toEncrypt) :
         encryptedWord = ""
-        numOfChar = ord(char)
         for char in toEncrypt :
+            numOfChar = ord(char)
             if(char >= 'A' and char <= 'Z'):
                 numOfChar = self.getNumOfChar(ord('A') , ord('Z'), numOfChar)
             elif (char >= 'a' and char <= 'z') :
@@ -62,9 +62,9 @@ class  CaesarCipher:
 
     def getNumOfChar(self, start, end, numOfChar):
         if (numOfChar + self.key < start):
-            numOfChar = end + ((numOfChar + self.key) - start)
+            numOfChar = end + ((numOfChar + self.key) - start ) +1
         elif (numOfChar + self.key > end):
-            numOfChar = start + ((numOfChar + self.key) - end)
+            numOfChar = start + (self.key - (end -numOfChar)) -1
         else :
             numOfChar = numOfChar + self.key
         return numOfChar
@@ -114,13 +114,12 @@ def getVigenereFromStr(inputStr):
                 firstLetter = 'a'
             else:
                 firstLetter = 'A'
-            print(firstLetter)
             listOfKeys.append(ord(char) - ord(firstLetter))
     temp_vigener = VigenereCipher(listOfKeys)
-    return temp_vigener;
+    return temp_vigener
 
 def loadEncryptionSystem(dir_path):
-    jsonFile = open(dir_path)
+    jsonFile = open(dir_path + "//config.json")
     data = json.load(jsonFile)
     type = data['type']
     ifEncrypt = data['encrypt']
@@ -136,7 +135,6 @@ def loadEncryptionSystem(dir_path):
     else:
         cipher = CaesarCipher(key)
     files = [f for f in os.listdir('.') if os.path.isfile(f)]
-    print(ifEncrypt)
     #if needs to encrypt .txt files to .enc files
     if ifEncrypt == True:
         for file in files:
