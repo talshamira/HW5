@@ -1,3 +1,6 @@
+import os.path
+import json
+
 #-------------------------------- Helper Functions --------------------------
 # returns encrypted letter
 def encryptCharacter(charToEncrypt, key):
@@ -116,4 +119,49 @@ def getVigenereFromStr(inputStr):
     temp_vigener = VigenereCipher(listOfKeys)
     return temp_vigener;
 
-#def loadEncryptionSystem(dir_path):
+def loadEncryptionSystem(dir_path):
+    jsonFile = open(dir_path)
+    data = json.load(jsonFile)
+    type = data['type']
+    ifEncrypt = data['encrypt']
+    key = data['key']
+    jsonFile.close()
+
+    ifKeyIsString = isinstance(key, str)
+    if type == 'Vigenere':
+        if ifKeyIsString:
+            cipher = getVigenereFromStr(key)
+        else:
+            cipher = VigenereCipher(key)
+    else:
+        cipher = CaesarCipher(key)
+    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+    print(ifEncrypt)
+    #if needs to encrypt .txt files to .enc files
+    if ifEncrypt == True:
+        for file in files:
+            if file.endswith('.txt'):
+                originalFile = open(file, 'r')
+                encryptedFileName = os.path.splitext(file)[0] + '.enc'
+                encryptedFile = open(encryptedFileName, 'w')
+                strForEncrypting = ''
+                for line in originalFile:
+                    strForEncrypting = strForEncrypting + line
+                encryptedFile.write(cipher.encrypt(strForEncrypting))
+                originalFile.close()
+                encryptedFile.close()
+    # if needs to decrypt .enc files to .txt files
+    else:
+        for file in files:
+            if file.endswith('.enc'):
+                # fileName = os.path.splitext(os.path.split(txtFile_path)[1])[0]
+                originalFile = open(file, 'r')
+                decryptedFileName = os.path.splitext(file)[0] + '.txt'
+                decryptedFile = open(decryptedFileName, 'w')
+                strForDecrypting = ''
+                for line in originalFile:
+                    strForDecrypting = strForDecrypting + line
+                decryptedFile.write(cipher.decrypt(strForDecrypting))
+                originalFile.close()
+                decryptedFile.close()
+
